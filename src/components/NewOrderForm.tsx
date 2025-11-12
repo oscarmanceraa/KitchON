@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
+import * as React from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from './ui/select';
 import type { Orden, Usuario, ProductoOrdenDetalle, Producto } from '../types/database';
 import { getProductos, getMesas } from '../lib/api';
 
@@ -138,7 +139,7 @@ export function NewOrderForm({ currentUser, onSubmit, onCancel }: NewOrderFormPr
       <div className="space-y-2">
         <Label htmlFor="mesa">Mesa *</Label>
         <Select value={idMesa?.toString() || ''} onValueChange={(value) => setIdMesa(parseInt(value))}>
-          <SelectTrigger id="mesa">
+          <SelectTrigger id="mesa" className="w-full">
             <SelectValue placeholder="Seleccionar mesa" />
           </SelectTrigger>
           <SelectContent>
@@ -186,21 +187,21 @@ export function NewOrderForm({ currentUser, onSubmit, onCancel }: NewOrderFormPr
                       value={item.IdProducto?.toString() || ''}
                       onValueChange={(value) => updateItem(item.tempId, 'IdProducto', parseInt(value))}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="Seleccionar producto" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="max-h-[300px]">
                         {Object.entries(productosPorTipo).map(([tipo, prods]) => (
-                          <div key={tipo}>
-                            <div className="px-2 py-1.5 text-sm font-semibold text-muted-foreground">
+                          <SelectGroup key={tipo}>
+                            <SelectLabel className="px-2 py-1.5 text-xs font-semibold">
                               {tipo}
-                            </div>
+                            </SelectLabel>
                             {prods.map(prod => (
                               <SelectItem key={prod.IdProducto} value={prod.IdProducto.toString()}>
                                 {prod.NombreProducto} - {formatCurrency(prod.Valor)}
                               </SelectItem>
                             ))}
-                          </div>
+                          </SelectGroup>
                         ))}
                       </SelectContent>
                     </Select>
