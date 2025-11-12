@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ShieldCheck, LogOut, TrendingUp, DollarSign, Clock, Users, Package, Edit, Trash2, Plus } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
@@ -31,9 +31,9 @@ import {
 } from './ui/select';
 import { EditUserDialog } from './EditUserDialog';
 import { EditProductDialog } from './EditProductDialog';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import type { OrdenCompleta, Usuario, Producto, Persona } from '../types/database';
-import * as DB from '../lib/mockDatabase';
+import { getUsuarios, getProductos, createProducto, updateProducto, deleteProducto } from '../lib/api';
 
 interface AdminDashboardProps {
   ordenes: OrdenCompleta[];
@@ -51,8 +51,30 @@ export function AdminDashboard({
   currentUser,
 }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState('overview');
-  const [usuarios, setUsuarios] = useState<Usuario[]>(DB.getUsuarios());
-  const [productos, setProductos] = useState<Producto[]>(DB.getProductos());
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+  const [productos, setProductos] = useState<Producto[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Cargar datos al iniciar
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const [usuariosData, productosData] = await Promise.all([
+        getUsuarios(),
+        getProductos(),
+      ]);
+      setUsuarios(usuariosData as any);
+      setProductos(productosData as any);
+    } catch (error) {
+      console.error('Error cargando datos:', error);
+      toast.error('Error al cargar los datos');
+    } finally {
+      setLoading(false);
+    }
+  };
   
   // Estados para diálogos de edición
   const [editUserDialog, setEditUserDialog] = useState<{ isOpen: boolean; usuario: Usuario | null; isNew: boolean }>({
@@ -71,8 +93,8 @@ export function AdminDashboard({
     id: null,
   });
 
-  const persona = DB.getPersona(currentUser.IdPersona);
-  const nombreUsuario = persona ? DB.getNombreCompleto(persona) : currentUser.Username;
+  // Obtener nombre del usuario desde los datos del usuario actual
+  const nombreUsuario = currentUser.Username; // Se puede mejorar obteniendo la persona del usuario
 
   const totalOrders = ordenes.length;
   const activeOrders = ordenes.filter(o => o.IdEstado !== 5 && o.IdEstado !== 6).length;
@@ -128,46 +150,66 @@ export function AdminDashboard({
   };
 
   // Handlers para usuarios
-  const handleSaveUser = (usuario: Usuario, persona: Persona) => {
-    if (editUserDialog.isNew) {
-      DB.crearPersona(persona);
-      DB.crearUsuario(usuario);
-      toast.success('Usuario creado exitosamente');
-    } else {
-      DB.actualizarUsuario(usuario.IdUsuario, usuario);
-      DB.actualizarPersona(persona.idPersona, persona);
-      toast.success('Usuario actualizado exitosamente');
+  const handleSaveUser = async (usuario: Usuario, persona: Persona) => {
+    try {
+      // TODO: Implementar endpoints de usuarios en el backend
+      toast.info('Funcionalidad de usuarios pendiente de implementar en el backend');
+      await loadData();
+    } catch (error) {
+      console.error('Error guardando usuario:', error);
+      toast.error('Error al guardar el usuario');
     }
-    setUsuarios(DB.getUsuarios());
   };
 
-  const handleDeleteUser = () => {
-    if (deleteDialog.id && deleteDialog.type === 'user') {
-      DB.eliminarUsuario(deleteDialog.id);
-      setUsuarios(DB.getUsuarios());
-      toast.success('Usuario eliminado');
-      setDeleteDialog({ isOpen: false, type: null, id: null });
+  const handleDeleteUser = async () => {
+    try {
+      // TODO: Implementar endpoints de usuarios en el backend
+      toast.info('Funcionalidad de usuarios pendiente de implementar en el backend');
+      await loadData();
+    } catch (error) {
+      console.error('Error eliminando usuario:', error);
+      toast.error('Error al eliminar el usuario');
     }
   };
 
   // Handlers para productos
-  const handleSaveProduct = (producto: Producto) => {
-    if (editProductDialog.isNew) {
-      DB.crearProducto(producto);
-      toast.success('Producto creado exitosamente');
-    } else {
-      DB.actualizarProducto(producto.IdProducto, producto);
-      toast.success('Producto actualizado exitosamente');
+  const handleSaveProduct = async (producto: Producto) => {
+    try {
+      if (editProductDialog.isNew) {
+        await createProducto({
+          IdTipoProducto: producto.IdTipoProducto,
+          NombreProducto: producto.NombreProducto,
+          Valor: producto.Valor,
+          IdEstado: producto.IdEstado,
+        });
+        toast.success('Producto creado exitosamente');
+      } else {
+        await updateProducto(producto.IdProducto, {
+          IdTipoProducto: producto.IdTipoProducto,
+          NombreProducto: producto.NombreProducto,
+          Valor: producto.Valor,
+          IdEstado: producto.IdEstado,
+        });
+        toast.success('Producto actualizado exitosamente');
+      }
+      await loadData();
+    } catch (error) {
+      console.error('Error guardando producto:', error);
+      toast.error('Error al guardar el producto');
     }
-    setProductos(DB.getProductos());
   };
 
-  const handleDeleteProduct = () => {
-    if (deleteDialog.id && deleteDialog.type === 'product') {
-      DB.eliminarProducto(deleteDialog.id);
-      setProductos(DB.getProductos());
-      toast.success('Producto eliminado');
-      setDeleteDialog({ isOpen: false, type: null, id: null });
+  const handleDeleteProduct = async () => {
+    try {
+      if (deleteDialog.id && deleteDialog.type === 'product') {
+        await deleteProducto(deleteDialog.id);
+        toast.success('Producto eliminado');
+        setDeleteDialog({ isOpen: false, type: null, id: null });
+        await loadData();
+      }
+    } catch (error) {
+      console.error('Error eliminando producto:', error);
+      toast.error('Error al eliminar el producto');
     }
   };
 

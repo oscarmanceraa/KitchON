@@ -6,7 +6,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Alert, AlertDescription } from './ui/alert';
 import type { Usuario } from '../types/database';
-import * as DB from '../lib/mockDatabase';
+import { login, saveToken } from '../lib/api';
 
 interface LoginScreenProps {
   onLogin: (usuario: Usuario) => void;
@@ -17,7 +17,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -26,12 +26,23 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
       return;
     }
 
-    const usuario = DB.autenticarUsuario(username, password);
-    
-    if (usuario) {
+    try {
+      const response = await login(username, password);
+      saveToken(response.token);
+      
+      // Convertir la respuesta del API al formato esperado
+      const usuario: Usuario = {
+        IdUsuario: response.usuario.IdUsuario,
+        IdPersona: response.usuario.IdPersona,
+        IdTipoUsuario: response.usuario.IdTipoUsuario,
+        Username: response.usuario.Username,
+        Password: '', // No guardamos el password
+        IdEstado: response.usuario.IdEstado,
+      };
+      
       onLogin(usuario);
-    } else {
-      setError('Usuario o contraseña incorrectos');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Usuario o contraseña incorrectos');
     }
   };
 

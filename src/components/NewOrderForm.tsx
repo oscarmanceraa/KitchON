@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import type { Orden, Usuario, ProductoOrdenDetalle, Producto } from '../types/database';
-import * as DB from '../lib/mockDatabase';
+import { getProductos, getMesas } from '../lib/api';
 
 interface NewOrderFormProps {
   currentUser: Usuario;
@@ -25,14 +25,32 @@ export function NewOrderForm({ currentUser, onSubmit, onCancel }: NewOrderFormPr
   const [items, setItems] = useState<FormProducto[]>([
     { tempId: '1', IdProducto: null, Cantidad: 1, Notas: '' },
   ]);
+  const [mesas, setMesas] = useState<any[]>([]);
+  const [productos, setProductos] = useState<Producto[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const mesas = DB.mesas;
-  const productos = DB.productos.filter(p => p.IdEstado === 1); // Solo productos activos
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const [mesasData, productosData] = await Promise.all([
+        getMesas(),
+        getProductos(),
+      ]);
+      setMesas(mesasData);
+      setProductos(productosData.filter((p: any) => p.IdEstado === 1)); // Solo productos activos
+    } catch (error) {
+      console.error('Error cargando datos:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   
   // Agrupar productos por tipo
   const productosPorTipo = productos.reduce((acc, producto) => {
-    const tipo = DB.getTipoProducto(producto.IdTipoProducto);
-    const nombreTipo = tipo?.TipoProducto || 'Otros';
+    const nombreTipo = producto.TipoProducto?.TipoProducto || 'Otros';
     if (!acc[nombreTipo]) {
       acc[nombreTipo] = [];
     }
@@ -69,7 +87,7 @@ export function NewOrderForm({ currentUser, onSubmit, onCancel }: NewOrderFormPr
 
   const getProducto = (idProducto: number | null): Producto | undefined => {
     if (!idProducto) return undefined;
-    return DB.getProducto(idProducto);
+    return productos.find(p => p.IdProducto === idProducto);
   };
 
   const calculateTotal = (): number => {
@@ -92,11 +110,9 @@ export function NewOrderForm({ currentUser, onSubmit, onCancel }: NewOrderFormPr
       return;
     }
 
-    // Generar nuevo ID para la orden
-    const nuevoIdOrden = Math.max(...DB.ordenes.map(o => o.IdOrden), 0) + 1;
-
+    // El ID se generará en el backend
     const nuevaOrden: Orden = {
-      IdOrden: nuevoIdOrden,
+      IdOrden: 0, // Se asignará en el backend
       IdUsuario: currentUser.IdUsuario,
       IdMesa: idMesa,
       IdEstado: 2, // Estado: Pendiente
@@ -105,13 +121,17 @@ export function NewOrderForm({ currentUser, onSubmit, onCancel }: NewOrderFormPr
 
     const productosOrden: ProductoOrdenDetalle[] = validItems.map(item => ({
       IdProducto: item.IdProducto!,
-      IdOrden: nuevoIdOrden,
+      IdOrden: 0, // Se asignará en el backend
       Cantidad: item.Cantidad,
       Notas: item.Notas || undefined,
     }));
 
     onSubmit(nuevaOrden, productosOrden);
   };
+
+  if (loading) {
+    return <div className="text-center py-8">Cargando...</div>;
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
