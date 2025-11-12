@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "./utils";
+import ReactDOM from "react-dom";
 
 function Select({
   ...props
@@ -61,32 +62,60 @@ function SelectContent({
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content>) {
   const contentPosition = position || "item-aligned";
-  return (
-    <SelectPrimitive.Portal>
-      <SelectPrimitive.Content
-        data-slot="select-content"
+  const portalElRef = React.useRef<HTMLElement | null>(null);
+  const [, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    const el = document.createElement('div');
+    el.setAttribute('data-select-portal', '');
+    el.style.position = 'fixed';
+    el.style.top = '0';
+    el.style.left = '0';
+    el.style.width = '100%';
+    el.style.height = '100%';
+    el.style.zIndex = '999999';
+    el.style.pointerEvents = 'none';
+    document.body.appendChild(el);
+    portalElRef.current = el;
+    setMounted(true);
+    return () => {
+      if (portalElRef.current) {
+        document.body.removeChild(portalElRef.current);
+        portalElRef.current = null;
+      }
+    };
+  }, []);
+
+  if (!portalElRef.current) {
+    return null;
+  }
+
+  return ReactDOM.createPortal(
+    <SelectPrimitive.Content
+      data-slot="select-content"
+      className={cn(
+        "bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 fixed max-h-[300px] min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border shadow-md",
+        contentPosition === "popper" &&
+          "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
+        className,
+      )}
+      position={contentPosition}
+      {...props}
+      style={{ pointerEvents: 'auto' }}
+    >
+      <SelectScrollUpButton />
+      <SelectPrimitive.Viewport
         className={cn(
-          "bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 relative z-[9999] max-h-[300px] min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border shadow-md",
+          "p-1",
           contentPosition === "popper" &&
-            "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
-          className,
+            "w-full min-w-[var(--radix-select-trigger-width)] scroll-my-1",
         )}
-        position={contentPosition}
-        {...props}
       >
-        <SelectScrollUpButton />
-        <SelectPrimitive.Viewport
-          className={cn(
-            "p-1",
-            contentPosition === "popper" &&
-              "w-full min-w-[var(--radix-select-trigger-width)] scroll-my-1",
-          )}
-        >
-          {children}
-        </SelectPrimitive.Viewport>
-        <SelectScrollDownButton />
-      </SelectPrimitive.Content>
-    </SelectPrimitive.Portal>
+        {children}
+      </SelectPrimitive.Viewport>
+      <SelectScrollDownButton />
+    </SelectPrimitive.Content>,
+    portalElRef.current,
   );
 }
 

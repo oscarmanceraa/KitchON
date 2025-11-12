@@ -7,6 +7,7 @@ import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from './ui/select';
 import type { Orden, Usuario, ProductoOrdenDetalle, Producto } from '../types/database';
 import { getProductos, getMesas } from '../lib/api';
+import { mesas as mockMesas, productos as mockProductos } from '../lib/mockDatabase';
 
 interface NewOrderFormProps {
   currentUser: Usuario;
@@ -40,10 +41,16 @@ export function NewOrderForm({ currentUser, onSubmit, onCancel }: NewOrderFormPr
         getMesas(),
         getProductos(),
       ]);
-      setMesas(mesasData);
-      setProductos(productosData.filter((p: any) => p.IdEstado === 1)); // Solo productos activos
+      setMesas(mesasData && mesasData.length > 0 ? mesasData : mockMesas);
+      setProductos(
+        productosData && productosData.length > 0
+          ? productosData.filter((p: any) => p.IdEstado === 1)
+          : mockProductos.filter((p: any) => p.IdEstado === 1)
+      );
     } catch (error) {
       console.error('Error cargando datos:', error);
+      setMesas(mockMesas);
+      setProductos(mockProductos.filter((p: any) => p.IdEstado === 1));
     } finally {
       setLoading(false);
     }
@@ -138,7 +145,7 @@ export function NewOrderForm({ currentUser, onSubmit, onCancel }: NewOrderFormPr
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="mesa">Mesa *</Label>
-        <Select value={idMesa?.toString() || ''} onValueChange={(value) => setIdMesa(parseInt(value))}>
+        <Select value={idMesa?.toString() || ''} onValueChange={(value) => setIdMesa(value ? parseInt(value) : null)}>
           <SelectTrigger id="mesa" className="w-full">
             <SelectValue placeholder="Seleccionar mesa" />
           </SelectTrigger>
@@ -185,7 +192,7 @@ export function NewOrderForm({ currentUser, onSubmit, onCancel }: NewOrderFormPr
                     <Label>Producto *</Label>
                     <Select
                       value={item.IdProducto?.toString() || ''}
-                      onValueChange={(value) => updateItem(item.tempId, 'IdProducto', parseInt(value))}
+                      onValueChange={(value) => updateItem(item.tempId, 'IdProducto', value ? parseInt(value) : null)}
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Seleccionar producto" />
