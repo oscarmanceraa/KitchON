@@ -10,7 +10,7 @@ class Command(BaseCommand):
     help = 'Pobla la base de datos con datos iniciales'
 
     def handle(self, *args, **options):
-        self.stdout.write('🌱 Iniciando seed de la base de datos...')
+        self.stdout.write('Iniciando seed de la base de datos...')
 
         # Limpiar datos existentes
         ProductoOrden.objects.all().delete()
@@ -32,7 +32,7 @@ class Command(BaseCommand):
         for estado_nombre in estados_data:
             estado = Estado.objects.create(Estado=estado_nombre)
             estados[estado_nombre] = estado
-        self.stdout.write(self.style.SUCCESS('✅ Estados creados'))
+        self.stdout.write(self.style.SUCCESS('[OK] Estados creados'))
 
         # Crear Tipos de Usuario
         tipos_usuario_data = ['Administrador', 'Mesero', 'Cocina']
@@ -40,7 +40,7 @@ class Command(BaseCommand):
         for tipo_nombre in tipos_usuario_data:
             tipo = TipoUsuario.objects.create(TipoUsuario=tipo_nombre)
             tipos_usuario[tipo_nombre] = tipo
-        self.stdout.write(self.style.SUCCESS('✅ Tipos de Usuario creados'))
+        self.stdout.write(self.style.SUCCESS('[OK] Tipos de Usuario creados'))
 
         # Crear Tipos de Producto
         tipos_producto_data = ['Entrada', 'Plato Principal', 'Bebida', 'Postre', 'Acompañamiento']
@@ -48,7 +48,7 @@ class Command(BaseCommand):
         for tipo_nombre in tipos_producto_data:
             tipo = TipoProducto.objects.create(TipoProducto=tipo_nombre)
             tipos_producto[tipo_nombre] = tipo
-        self.stdout.write(self.style.SUCCESS('✅ Tipos de Producto creados'))
+        self.stdout.write(self.style.SUCCESS('[OK] Tipos de Producto creados'))
 
         # Crear Personas
         personas_data = [
@@ -61,7 +61,7 @@ class Command(BaseCommand):
         for persona_data in personas_data:
             persona = Persona.objects.create(**persona_data)
             personas.append(persona)
-        self.stdout.write(self.style.SUCCESS('✅ Personas creadas'))
+        self.stdout.write(self.style.SUCCESS('[OK] Personas creadas'))
 
         # Crear Usuarios
         usuarios_data = [
@@ -101,14 +101,14 @@ class Command(BaseCommand):
             usuario.set_password(password)
             usuario.save()
             usuarios.append(usuario)
-        self.stdout.write(self.style.SUCCESS('✅ Usuarios creados'))
+        self.stdout.write(self.style.SUCCESS('[OK] Usuarios creados'))
 
         # Crear Mesas
         mesas = []
         for i in range(1, 11):
             mesa = Mesa.objects.create(Mesa=f'Mesa {i}')
             mesas.append(mesa)
-        self.stdout.write(self.style.SUCCESS('✅ Mesas creadas'))
+        self.stdout.write(self.style.SUCCESS('[OK] Mesas creadas'))
 
         # Crear Productos
         productos_data = [
@@ -135,7 +135,7 @@ class Command(BaseCommand):
         for producto_data in productos_data:
             producto = Producto.objects.create(**producto_data)
             productos.append(producto)
-        self.stdout.write(self.style.SUCCESS('✅ Productos creados'))
+        self.stdout.write(self.style.SUCCESS('[OK] Productos creados'))
 
         # Crear Órdenes de ejemplo
         fecha1 = datetime.now() - timedelta(minutes=15)
@@ -151,7 +151,7 @@ class Command(BaseCommand):
         for orden_data in ordenes_data:
             orden = Orden.objects.create(**orden_data)
             ordenes.append(orden)
-        self.stdout.write(self.style.SUCCESS('✅ Órdenes creadas'))
+        self.stdout.write(self.style.SUCCESS('[OK] Ordenes creadas'))
 
         # Crear ProductosOrden
         productos_orden_data = [
@@ -163,10 +163,10 @@ class Command(BaseCommand):
         ]
         for producto_orden_data in productos_orden_data:
             ProductoOrden.objects.create(**producto_orden_data)
-        self.stdout.write(self.style.SUCCESS('✅ Productos de órdenes creados'))
+        self.stdout.write(self.style.SUCCESS('[OK] Productos de ordenes creados'))
 
-        self.stdout.write(self.style.SUCCESS('\n🎉 Base de datos inicializada exitosamente!'))
-        self.stdout.write('\n📝 Usuarios de prueba:')
+        self.stdout.write(self.style.SUCCESS('\n[OK] Base de datos inicializada exitosamente!'))
+        self.stdout.write('\nUsuarios de prueba:')
         self.stdout.write('   - admin / admin123 (Administrador)')
         self.stdout.write('   - maria / mesero123 (Mesero)')
         self.stdout.write('   - carlos / mesero123 (Mesero)')

@@ -35,17 +35,14 @@ pip install -r requirements.txt
 # FRONTEND_URL=http://localhost:5173
 ```
 
-5. **Ejecutar migraciones:**
+5. **Ejecutar migraciones (esto creará automáticamente los usuarios de prueba):**
 ```bash
 python manage.py migrate
 ```
 
-6. **Poblar la base de datos con datos iniciales:**
-```bash
-python manage.py seed_db
-```
+**Nota:** Las migraciones incluyen automáticamente los usuarios de prueba y datos iniciales.
 
-7. **Ejecutar el servidor:**
+6. **Ejecutar el servidor:**
 ```bash
 python manage.py runserver
 ```
@@ -74,7 +71,7 @@ El frontend estará disponible en `http://localhost:5173` (o el puerto que Vite 
 
 ## 🔐 Usuarios de Prueba
 
-Después de inicializar la base de datos, puedes usar estos usuarios:
+Los usuarios de prueba se crean automáticamente al ejecutar las migraciones. Puedes usar estos usuarios:
 
 - **Administrador:** `admin` / `admin123`
 - **Mesero:** `maria` / `mesero123` o `carlos` / `mesero123`

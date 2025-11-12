@@ -3,6 +3,7 @@ from .models import (
     Estado, TipoProducto, TipoUsuario, Persona,
     Producto, Usuario, Mesa, Orden, ProductoOrden
 )
+from django.db import models
 
 
 class EstadoSerializer(serializers.ModelSerializer):
@@ -30,23 +31,18 @@ class PersonaSerializer(serializers.ModelSerializer):
 
 
 class ProductoSerializer(serializers.ModelSerializer):
-    TipoProducto = TipoProductoSerializer(read_only=True)
-    Estado = EstadoSerializer(read_only=True)
-    IdTipoProducto = serializers.PrimaryKeyRelatedField(queryset=TipoProducto.objects.all(), write_only=True)
-    IdEstado = serializers.PrimaryKeyRelatedField(queryset=Estado.objects.all(), write_only=True)
-
+    TipoProducto = TipoProductoSerializer(read_only=True, source='IdTipoProducto')
+    Estado = EstadoSerializer(read_only=True, source='IdEstado')
+    
     class Meta:
         model = Producto
         fields = ['IdProducto', 'IdTipoProducto', 'NombreProducto', 'Valor', 'IdEstado', 'TipoProducto', 'Estado']
 
 
 class UsuarioSerializer(serializers.ModelSerializer):
-    Persona = PersonaSerializer(read_only=True)
-    TipoUsuario = TipoUsuarioSerializer(read_only=True)
-    Estado = EstadoSerializer(read_only=True)
-    IdPersona = serializers.PrimaryKeyRelatedField(queryset=Persona.objects.all(), write_only=True)
-    IdTipoUsuario = serializers.PrimaryKeyRelatedField(queryset=TipoUsuario.objects.all(), write_only=True)
-    IdEstado = serializers.PrimaryKeyRelatedField(queryset=Estado.objects.all(), write_only=True)
+    Persona = PersonaSerializer(read_only=True, source='IdPersona')
+    TipoUsuario = TipoUsuarioSerializer(read_only=True, source='IdTipoUsuario')
+    Estado = EstadoSerializer(read_only=True, source='IdEstado')
     Password = serializers.CharField(write_only=True, required=False)
 
     class Meta:
@@ -69,8 +65,7 @@ class MesaSerializer(serializers.ModelSerializer):
 
 
 class ProductoOrdenSerializer(serializers.ModelSerializer):
-    Producto = ProductoSerializer(read_only=True)
-    IdProducto = serializers.PrimaryKeyRelatedField(queryset=Producto.objects.all(), write_only=True)
+    Producto = ProductoSerializer(read_only=True, source='IdProducto')
 
     class Meta:
         model = ProductoOrden
@@ -78,13 +73,10 @@ class ProductoOrdenSerializer(serializers.ModelSerializer):
 
 
 class OrdenSerializer(serializers.ModelSerializer):
-    Usuario = UsuarioSerializer(read_only=True)
-    Mesa = MesaSerializer(read_only=True)
-    Estado = EstadoSerializer(read_only=True)
-    ProductosOrden = ProductoOrdenSerializer(many=True, read_only=True)
-    IdUsuario = serializers.PrimaryKeyRelatedField(queryset=Usuario.objects.all(), write_only=True)
-    IdMesa = serializers.PrimaryKeyRelatedField(queryset=Mesa.objects.all(), write_only=True)
-    IdEstado = serializers.PrimaryKeyRelatedField(queryset=Estado.objects.all(), write_only=True)
+    Usuario = UsuarioSerializer(read_only=True, source='IdUsuario')
+    Mesa = MesaSerializer(read_only=True, source='IdMesa')
+    Estado = EstadoSerializer(read_only=True, source='IdEstado')
+    ProductosOrden = ProductoOrdenSerializer(many=True, read_only=True, source='productos_orden')
 
     class Meta:
         model = Orden

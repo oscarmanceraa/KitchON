@@ -28,12 +28,12 @@ pip install -r requirements.txt
 # FRONTEND_URL=http://localhost:5173
 ```
 
-4. **Ejecutar migraciones:**
+4. **Ejecutar migraciones (esto creará automáticamente los usuarios de prueba):**
 ```bash
 python manage.py migrate
 ```
 
-5. **Poblar la base de datos con datos iniciales:**
+**Nota:** Las migraciones incluyen automáticamente los usuarios de prueba y datos iniciales. Si necesitas repoblar la base de datos, puedes usar:
 ```bash
 python manage.py seed_db
 ```
@@ -76,7 +76,7 @@ El servidor estará disponible en `http://localhost:8000` (o el puerto configura
 
 ## 🔐 Usuarios de Prueba
 
-Después de ejecutar `python manage.py seed_db`, puedes usar estos usuarios:
+Los usuarios de prueba se crean automáticamente al ejecutar `python manage.py migrate`. Puedes usar estos usuarios:
 
 - **Administrador:** `admin` / `admin123`
 - **Mesero:** `maria` / `mesero123` o `carlos` / `mesero123`
